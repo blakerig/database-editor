@@ -96,7 +96,7 @@ WHERE id=$12
 await pool.query(`
 INSERT INTO destinations (name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-`, [id, name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections]);
+`, [name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections]);
 }
 
 
