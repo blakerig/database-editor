@@ -5,13 +5,10 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const port = 3000;
 
-// PostgreSQL connection pool
 const pool = new Pool({
-  host: '13.36.39.66',
-  port: 5432,
-  database: 'travelfoxdb',
-  user: 'postgres',
-  password: 'pw'
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // required for Render / EC2 testing
+  connectionTimeoutMillis: 5000
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));
