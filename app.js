@@ -80,9 +80,9 @@ let { id, name, flag, main_image, currency, official_languages, timezone, capita
 
 
 // Generate new ID if adding (use UUID for simplicity) if your table allows integer IDs, you may need a sequence or let DB handle it
-if (!id) {
-id = Math.floor(Math.random() * 1000000); // temporary unique integer ID
-}
+//if (!id) {
+//id = Math.floor(Math.random() * 1000000); // temporary unique integer ID
+//}
 
 
 if (req.query.id) {
@@ -94,7 +94,7 @@ WHERE id=$12
 `, [name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections, id]);
 } else {
 await pool.query(`
-INSERT INTO destinations (id, name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections)
+INSERT INTO destinations (name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 `, [id, name, flag, main_image, currency, official_languages, timezone, capital, category, description, status, sections]);
 }
