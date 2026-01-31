@@ -15,27 +15,26 @@ const pool = new Pool({
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ---------------- CSS + JS ----------------
-const styles = `
+const styles = `<style>
 body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-h1 { color: #333; }
-form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; }
-label { display: block; margin-bottom: 10px; }
-input[type=text], input[type=email], textarea, select { width: 100%; padding: 8px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-textarea { resize: vertical; min-height: 80px; }
-textarea[name=description] { height: 150px; }
-textarea[name=notes] { height: 120px; }
-button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-button:hover { background-color: #218838; }
-table { border-collapse: collapse; width: 100%; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-th { background-color: #007bff; color: white; }
-tr:nth-child(even) { background-color: #f2f2f2; }
-a { color: #007bff; text-decoration: none; }
-a:hover { text-decoration: underline; }
-`;
+ h1 { color: #333; }
+ form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin-bottom: 30px; }
+ label { display: block; margin-bottom: 10px; }
+ input[type=text], input[type=email], textarea, select { width: 100%; padding: 8px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+ textarea { resize: vertical; min-height: 80px; }
+ textarea[name=description] { height: 150px; }
+ textarea[name=notes] { height: 120px; }
+ button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+ button:hover { background-color: #218838; }
+ table { border-collapse: collapse; width: 100%; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+ th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+ th { background-color: #007bff; color: white; }
+ tr:nth-child(even) { background-color: #f2f2f2; }
+ a { color: #007bff; text-decoration: none; }
+ a:hover { text-decoration: underline; }
+</style>`;
 
-const autoExpandScript = `
-<script>
+const autoExpandScript = `<script>
 function autoExpand(field) {
     field.style.height = 'auto';
     field.style.height = field.scrollHeight + 'px';
@@ -44,8 +43,7 @@ window.addEventListener('input', function(e) {
     if(e.target.tagName.toLowerCase() !== 'textarea') return;
     autoExpand(e.target);
 });
-</script>
-`;
+</script>`;
 
 // ---------------- ROOT REDIRECT ----------------
 app.get('/', (req, res) => res.redirect('/restaurants'));
@@ -58,7 +56,7 @@ app.get('/restaurants', async (req, res) => {
     result.rows.forEach(r => {
       html += `<tr><td>${r.name}</td><td>${r.address}</td><td><a href=\"/restaurant?id=${r.id}\">Edit</a></td></tr>`;
     });
-    html += '</table><br><a href="/restaurant">Add New Restaurant</a>';
+    html += '</table><a href="/restaurant">Add New Restaurant</a>';
     res.send(html);
   } catch (err) {
     console.error(err);
@@ -86,6 +84,7 @@ app.get('/restaurant', async (req, res) => {
     });
 
     let html = `${styles}
+<h1>${id ? 'Edit' : 'Add'} Restaurant</h1>
 <form method="POST" action="/restaurant${id ? '?id=' + id : ''}">
 ${id ? `<input type="hidden" name="id" value="${restaurant.id}">` : ''}
 <label>Destination: <select name="destination_id">${destinationOptions}</select></label>
@@ -106,7 +105,7 @@ ${id ? `<input type="hidden" name="id" value="${restaurant.id}">` : ''}
 <label>Notes: <textarea name="notes">${restaurant.notes || ''}</textarea></label>
 <label>Closed Down: <input type="checkbox" name="closeddown" ${restaurant.closeddown ? 'checked' : ''}></label>
 <button type="submit">${id ? 'Update' : 'Add'} Restaurant</button>
-</form><br><a href="/restaurants">Back to List</a>${autoExpandScript}`;
+</form>${autoExpandScript}<br><a href="/restaurants">Back to List</a>`;
 
     res.send(html);
   } catch (err) {
@@ -121,7 +120,7 @@ app.post('/restaurant', async (req, res) => {
     const mustSeeBool = must_see === 'on';
     const proofReadBool = proof_read === 'on';
     const closedDownBool = closeddown === 'on';
-    const location = `POINT(${longitude} ${latitude})`;
+    const location = `POINT(${longitude || 0} ${latitude || 0})`;
 
     if (id) {
       await pool.query(`UPDATE restaurants SET destination_id=$1, name=$2, address=$3, description=$4, cost=$5, email=$6, cuisine=$7, price_range=$8, website=$9, telephone=$10, opening_hours=$11, location=ST_GeogFromText($12), must_see=$13, proof_read=$14, notes=$15, closeddown=$16 WHERE id=$17`, [destination_id, name, address, description, cost, email, cuisine, price_range, website, telephone, opening_hours, location, mustSeeBool, proofReadBool, notes, closedDownBool, id]);
@@ -145,7 +144,7 @@ app.get('/destinations', async (req, res) => {
     result.rows.forEach(d => {
       html += `<tr><td>${d.name}</td><td>${d.capital || ''}</td><td>${d.category || ''}</td><td><a href=\"/destination?id=${d.id}\">Edit</a></td></tr>`;
     });
-    html += '</table><br><a href="/destination">Add New Destination</a>';
+    html += '</table><a href="/destination">Add New Destination</a>';
     res.send(html);
   } catch (err) {
     console.error(err);
@@ -164,6 +163,7 @@ app.get('/destination', async (req, res) => {
     }
 
     let html = `${styles}
+<h1>${id ? 'Edit' : 'Add'} Destination</h1>
 <form method="POST" action="/destination${id ? '?id=' + id : ''}">
 ${id ? `<input type="hidden" name="id" value="${destination.id}">` : ''}
 <label>Name: <input type="text" name="name" value="${destination.name || ''}" required></label>
@@ -178,7 +178,7 @@ ${id ? `<input type="hidden" name="id" value="${destination.id}">` : ''}
 <label>Status: <input type="text" name="status" value="${destination.status || ''}"></label>
 <label>Sections: <input type="text" name="sections" value="${destination.sections || ''}"></label>
 <button type="submit">${id ? 'Update' : 'Add'} Destination</button>
-</form><br><a href="/destinations">Back to List</a>${autoExpandScript}`;
+</form>${autoExpandScript}<br><a href="/destinations">Back to List</a>`;
 
     res.send(html);
   } catch (err) {
